@@ -1,0 +1,26 @@
+\babel@toc {american}{}\relax 
+\contentsline {section}{Introduction}{1}{section*.2}%
+\contentsline {section}{\numberline {1}Intuitionistic Logic: Syntax and Semantics}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Motivation}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Definitions}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Natural Deduction}{4}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}BHK interpretation}{4}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Normalization}{6}{subsubsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.4}Sequent Calculus}{7}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Kripke's Semantics}{9}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Tableaux}{12}{subsection.1.6}%
+\contentsline {subsection}{\numberline {1.7}Topological Interpretation}{14}{subsection.1.7}%
+\contentsline {subsection}{\numberline {1.8}Heyting Algebra}{16}{subsection.1.8}%
+\contentsline {subsection}{\numberline {1.9}Soundness and Correctness}{18}{subsection.1.9}%
+\contentsline {subsection}{\numberline {1.10}G{\"o}del-Gentzen Translation}{18}{subsection.1.10}%
+\contentsline {section}{\numberline {2}The Curry-Howard Correspondence}{19}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Intuitionistic Type Theory}{19}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}The Correspondence}{22}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Automated Reasoning and Knowledge Representation}{22}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Proof Assistants: Agda, Lean, Coq etc.}{22}{subsubsection.2.3.1}%
+\contentsline {section}{\numberline {A}Examples}{23}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Natural Deduction}{23}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Sequent Calculus}{24}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Tableaux}{25}{subsection.A.3}%
+\contentsline {section}{References}{28}{section*.3}%
+\contentsline {section}{Index}{29}{section*.4}%

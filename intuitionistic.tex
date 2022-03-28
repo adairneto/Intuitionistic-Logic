@@ -1,0 +1,1442 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[american]{babel}
+\usepackage{imakeidx}
+\makeindex[columns=1, intoc] % options= -s index_style.ist
+\usepackage[colorlinks=true, allcolors=magenta]{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[utf8x]{inputenc}
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0.5em}
+\usepackage{indentfirst}
+\usepackage{float}
+\usepackage{epigraph}
+\usepackage{stmaryrd}
+\usepackage{bussproofs}
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage[T1]{fontenc}
+% \usepackage[frenchmath]{newtxmath}
+\usepackage[frenchmath]{mathastext}
+% \renewcommand*\oldstylenums[1]{{\firaoldstyle #1}}
+\usepackage[titles]{tocloft}
+\renewcommand{\cftdot}{}
+\usepackage{url}
+\usepackage{lscape}
+\usepackage{mdframed}
+
+% Colors
+\usepackage[dvipsnames]{xcolor}
+\definecolor{fireopal}{rgb}{0.93, 0.38, 0.33}
+\definecolor{aquamarine}{rgb}{0.38, 0.83, 0.58}
+\definecolor{mintgreen}{rgb}{0.67, 0.97, 0.51}
+\definecolor{crayola}{rgb}{1, 0.85, 0.49}
+\definecolor{tangerine}{rgb}{1, 0.61, 0.52}
+
+\usepackage[tableaux]{prooftrees}
+\usepackage{amsthm}
+\newtheoremstyle{break}%
+{}{}%
+{\itshape}{}%
+{\topsep}
+{\bfseries}{}% % Note that final punctuation is omitted.
+{\newline}{}
+%\theoremstyle{break}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{example}{Example}[section]
+\newtheorem{definition}{Definition}[section]
+\renewcommand\qedsymbol{$\blacksquare$}
+
+% TikZ
+\setlength\epigraphwidth{.8\textwidth}
+\usepackage{quiver}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows,calc,patterns,positioning,shapes}
+\usetikzlibrary{decorations.pathmorphing}
+\tikzset{
+  modal/.style={>=stealth',
+    shorten >=1pt,
+    shorten <=1pt,
+    auto,
+    node distance=1.5cm,
+    label distance=2pt,
+    semithick},
+  every label/.style={phantom,align=left},
+  world/.style = {circle,draw,minimum size=0.5cm,fill=gray!15},
+  modal every node/.style={world},
+  point/.style={circle,draw,inner sep=0.5mm,fill=black},
+  phantom/.style={rectangle,inner sep=0pt,draw=none,fill=none},
+  reflexive above/.style={->,loop,looseness=7,in=60,out=120},
+  reflexive below/.style={->,loop,looseness=7,in=240,out=300},
+  reflexive left/.style={->,loop,looseness=7,in=150,out=210},
+  reflexive right/.style={->,loop,looseness=7,in=30,out=330}
+}
+\DeclareDocumentCommand \mTrue { m }{\ensuremath{#1}}
+\DeclareDocumentCommand \mFalse { m }{\ensuremath{\lnot #1}}
+
+%\usepackage{sectsty}
+%\subsectionfont{\color{RubineRed}}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=fireopal,
+    filecolor=aquamarine,      
+    urlcolor=fireopal,
+    pdftitle={Foundations of Automated Reasoning: Intuitionistic Logic and Type Theory},
+    pdfpagemode=FitH,
+}
+\author{\href{https://adairneto.github.io/}{Adair Antonio da Silva Neto}}
+\title{Foundations of Automated Reasoning: Intuitionistic Logic and Type Theory}
+
+\begin{document}
+
+\clearpage\maketitle
+\thispagestyle{empty}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+\clearpage
+\setcounter{page}{1}
+
+\epigraph{`The question of the validity of the principium tertii exclusi is thus equivalent to the question concerning the \textit{possibility of unsolvable mathematical problems}. For the already proclaimed conviction that unsolvable mathematical problems do not exist, no indication of a demonstration is present.'}{L.E.J. Brouwer, \textit{De onbetrouwbaarheid der logische principes}, 1908}
+
+\section*{Introduction}
+\label{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+% (INSERT QUOTES ABOUT AGDA, LEAN AND SCHOLZE)
+The motivation behind this work is to understand how Intuitionistic logic can be used in Automated Reasoning. Recently, there has been a lot of progress in the development and usage of Proof Assistants in Mathematical research, Artificial Intelligence and Software Engineering.
+
+The text is divided into three main chapters. The idea of the first is to answer the question "What is Intuitionistic Logic and Constructive Mathematics?" also presenting its semantics and proof methods.
+
+In the second chapter, Intuitionistic Type Theory will be presented. This allows us to understand propositions as types and hence, moving to the final chapter, approach the Curry-Howard Isomorphism, treating proofs as functions and then translating reasoning into computational language. 
+
+Although this text is not a philosophical analysis of constructivism, it is important to state that the text is written with a pluralist approach in mind. The idea is not to deny classical logic, but to understand the computational power of constructive logic.
+
+In order to clarify our language, we shall use `constructivism' to denote the philosophical aspect of intuitionism and `intuitionistic logic' to denote the technical aspect of it. 
+
+\newpage
+\section{Intuitionistic Logic: Syntax and Semantics}
+\label{Logic}
+
+In this first section, intuitionistic logic will be introduced. In order to give a more understandable approach, Brouwer-Heyting-Kolmogorov interpretation and natural deduction are presented together.
+
+After that, there is a minimum of semantics and proof methods which will be necessary for the second and third sections of this text.
+
+\subsection{Motivation}
+\label{Motivation}
+
+What is Intuitionistic Logic and how does it differ from Classical Logic? Or, as some mathematicians may object, why use such a `restrictive logic' instead of the `full powers of Classical Mathematics'?
+
+To answer the first question, Intuitionistic Logic can be obtained from Classical Logic by rejecting the Law of Excluded Middle (LEM). Consequently, Double Negation Elimination (DNE) does not hold. However, the law of non-contradiction and \textit{ex falso sequitur quodlibet} are valid in Intuitionistic Logic.
+
+Another consequence of the rejection of LEM is that proof by contradiction, the \textit{reductio ad absurdum}, is not possible.
+
+So, why use Intuitionistic Logic?
+
+The reasoning behind the rejection of LEM is the constructive motivation of Intuitionistic Logic. According to constructivism, to prove a sentence $P$, it is necessary to show a construction of $P$ --- the meaning of proofs in Intuitionistic Logic will be clarified in the `Brouwer–Heyting–Kolmogorov interpretation' section [\ref{BHK}].
+
+More than that, in constructivism, sentences carry information about the world so it is not possible to derive positive information from negative information.
+
+According to Brouwer \cite{van2017lej}, the LEM is equivalent to the assumption that every mathematical problem has a solution. Nevertheless, there is no proof that that is the case.
+
+Besides the philosophical motivation, the constructive reasoning of Intuitionistic Logic makes it possible to translate intuitionistic proofs into computer programs. This computational power allowed significant progress in proof assistants and is the main motivation of this work, being explored in the last section [\ref{CHC}].
+
+\subsection{Definitions}
+\label{Definitions}
+
+Before heading on, it is necessary to clarify the meaning of the symbols which will appear ahead.
+
+\begin{definition}[Language]
+    A \textbf{language} $\mathfrak{L}$ consists of the following symbols:
+    \begin{enumerate}
+        \item Constants:
+            \begin{enumerate}
+                \item Individual: $k_0,k_1,\ldots,k_j,\ldots (j=0,1,2,\ldots)$.
+                \item Functions with arity $(i = 1,2,\ldots)$: $f_0^i, f_1^i, \ldots, f_j^i, \ldots (j=0,1,2,\ldots)$.
+                \item Predicates with arity $(i = 0,1,2,\ldots)$: $R_0^i, f_1^i, \ldots, R_j^i, \ldots (j=0,1,2,\ldots)$.
+            \end{enumerate}
+        \item Variables:
+            \begin{enumerate}
+                \item Free: $a_0, a_1, \ldots, a_j, \ldots (j=0,1,2,\ldots)$.
+                \item Bound: $x_0, x_1, \ldots, x_j, \ldots (j=0,1,2,\ldots)$.
+            \end{enumerate}
+        \item Logical symbols:
+        \begin{enumerate}
+            \item Propositional connectives: $\neg$ (not), $\land$ (and), $\lor$ (or), $\to$ (implies).
+            \item Quantifiers: $\forall$ (for all), $\exists$ (there exists).
+        \end{enumerate} 
+        \item Punctuation: parentheses `(', `)' and comma `,'.
+    \end{enumerate}
+\end{definition}
+
+\begin{definition}[Term]
+    A \textbf{term} of $\mathfrak{L}$ is defined recursively as follows:
+    \begin{enumerate}
+        \item Every individual constant is a term.
+        \item Every free variable is a term.
+        \item If $f^i$ is an i-ary function constant and $t_1, \ldots t_i$ are terms, then $f^i(t_1, \ldots t_i)$ is a term.
+        \item Nothing else is a term.
+    \end{enumerate}
+\end{definition}
+
+\begin{definition}[Formula]
+    Similarly, a \textbf{formula} of $\mathfrak{L}$ is defined recursively as follows:
+    \begin{enumerate}
+        \item If $R^i$ is an i-ary predicate constant and $t_1, \ldots t_i$ are terms, then $R^i (t_1, \ldots t_i)$ is a formula called \textbf{atomic formula}.
+        \item If $A$ and $B$ are formulas, then $(\neg A)$, $(A \land B)$, $(A \lor B)$ and $(A \to B)$ are formulas.
+        \item If $A$ is a formula, $a$ is a free variable and $x$ is a bound variable not occuring in $A$, then $\forall x A[a/x]$ and $\exists x A[a/x]$ are formulas, where $A[a/x]$ is obtained by replacing every occurrence of $x$ in $A$ by $a$.
+        \item Nothing else is a formula.
+    \end{enumerate}
+\end{definition}
+
+In order to use a more concise notation, the outermost parentheses will not be written. Also, we may use $a,b,c$ for free variables, $x,y,z$ for bound variables and $f, g, h$ for functions, for example. Context will clarify.
+
+\subsection{Natural Deduction}
+\label{Natural-Deduction}
+
+\subsubsection{BHK interpretation}
+\label{BHK}
+
+A useful way of showing what is intuitionistic logic and constructivism is by means of the \textbf{Brouwer–Heyting–Kolmogorov interpretation}. This interpretation reflects the belief that the truth of a proposition is not determined by the truth value of its parts -- conditionality -- but, since mathematics is not related to external reality, by its proof conditions.
+
+Using this constructive idea of `truth' \cite{vandalen-blackwell}, we can understand the logical symbols as follows.
+
+A proof of $A \land B$ is a pair $(a,b)$ where $a$ is a proof of $A$, denoted $a:A$, and $b$ is a proof of $b$, i.e., $b:B$. As a matter of course, we have the following rules for natural deduction.
+\begin{prooftree}
+($\land I$) \AxiomC{$A$} \AxiomC{$B$}
+\BinaryInfC{$A \land B$}
+\DisplayProof \hspace{50pt}
+ ($\land E$) \AxiomC{$A \land B$}
+\UnaryInfC{$A$}
+\DisplayProof \hspace{10pt}
+\AxiomC{$A \land B$}
+\UnaryInfC{$B$}
+\end{prooftree}
+where `$I$' stands for `introduction' and `$E$', for `elimination'.
+
+A proof of $A \lor B$ is a pair $(a,b)$ where $a$ points to which formula of the disjunction is correct and $b$ is a proof of it. That means that $b : A$ if $a = 0$ and $b : B$ if $a = 1$. For natural deduction we have the following rules for the introduction and elimination of the disjunction.
+\begin{prooftree}
+($\lor I$) \AxiomC{$A$}
+\UnaryInfC{$A \lor B$}
+\DisplayProof \hspace{50pt}
+\AxiomC{$B$}
+\UnaryInfC{$A \lor B$}
+\DisplayProof \hspace{50pt}
+($\lor E$) \AxiomC{$A \lor B$}
+	\alwaysNoLine
+	\AxiomC{$[A]$}
+	\UnaryInfC{$\mathfrak{D_1}$}
+	\alwaysSingleLine
+	\UnaryInfC{$C$}
+	\alwaysNoLine
+	\AxiomC{$[B]$}
+	\UnaryInfC{$\mathfrak{D_2}$}
+	\alwaysSingleLine
+	\UnaryInfC{$C$}
+\TrinaryInfC{$C$}
+\end{prooftree}
+
+A proof of $A \to B$ is a function that transforms a proof of $A$ into a proof of $B$. That means that if $f:A \longrightarrow B$, then for all $a:A$ we have $f(a):B$.
+\begin{prooftree}
+($\to I$)
+\AxiomC{$[A]$}
+\noLine
+\UnaryInfC{$\mathfrak{D}$}
+\noLine
+\UnaryInfC{$B$}
+\UnaryInfC{$A \to B$}
+\DisplayProof \hspace{50pt}
+($\to E$) \AxiomC{$A$} \AxiomC{$A \to B$}
+\BinaryInfC{$B$}
+\end{prooftree}
+
+A proof of $\forall x A(x)$ is a function $a$ such that for all variables $d$ in a given domain, $a(d) : A(d)$, i.e., $a$ applied to $d$ is a proof of $A(d)$.
+\begin{prooftree}
+($\forall I$) \AxiomC{$\mathfrak{D}$}
+\noLine
+\UnaryInfC{$A(x)$}
+\UnaryInfC{$\forall x A(x)$}
+\DisplayProof \hspace{50pt}
+($\forall E$) \AxiomC{$\forall x A(x)$}
+\UnaryInfC{$A(t)$}
+\end{prooftree}
+
+In intuitionistic logic, to prove that something with a given property exists it is necessary to show an ``instance'' that satisfies that property. In other words, the existence of an object means that it is possible to construct it.
+
+Following this idea, a proof of $\exists x A(x)$ is a pair $(a,b)$ where $b : A(a)$. That means that we need to show an object $a$ and also prove that $a$ satisfies $A(a)$.
+\begin{prooftree}
+($\exists I$) \AxiomC{$A(t)$}
+\UnaryInfC{$\exists x A(x)$}
+\DisplayProof \hspace{50pt}
+($\exists E$) \AxiomC{$\exists x A(x)$}
+    \AxiomC{$[A(x)]$}
+    \noLine
+    \UnaryInfC{$\mathfrak{D}$}
+    \noLine
+    \UnaryInfC{$C$}
+\BinaryInfC{$C$}
+\end{prooftree}
+
+Before heading to the meaning of negation, it is important to note that \textit{ex falso sequitur quodlibet} holds in intuitionism. Let `$\bot$' (called \textbf{bottom particle} or \textbf{falsum}) denote falsity. Then,
+\begin{prooftree}
+($\bot E$) \AxiomC{$\bot$}
+\UnaryInfC{$A$}
+\end{prooftree}
+
+% With that in mind, a proof of $\neg A$ is a proof that there is no proof of $A$. Since there is no proof of an absurdity, a proof of $\neg A$ means that all proofs $a:A$ can be converted into a contradiction. That means that there is a function $f$ such that $f(a) : \bot$, i.e., $\neg A$ is equivalent to $A \to \bot$. 
+
+Finally, a proof of $\neg A$ means that all proofs $a:A$ can be converted into a contradiction. Hence, there exists a function $f$ such that $f(a) : \bot$, which means that $\neg A$ is equivalent to $A \to \bot$.
+
+To put it another way, since there is no proof of an absurdity, a proof of $\neg A$ is a proof that there is no proof of $A$.
+
+\index{Consequence!Syntatical}
+\begin{definition}[Syntatical consequence]
+    If a set of formulas $\Sigma$ proves a formula $A$ by applying the rules of natural deduction (or any similar method, like analytical tableaux [\ref{Tableaux}] or sequent calculus [\ref{Sequent}]), then $A$ is called \textbf{syntatical consequence} of $\Sigma$, denoted $\Sigma \vdash A$. Otherwise, $\Sigma \not\vdash A$.
+\end{definition}
+
+If the reader is not familiar with derivations in natural deduction, please take a look at the \hyperref[Examples-ND]{appendix}, where some examples are given.
+
+% \begin{example}[$\vdash (\neg P \lor \neg Q) \to \neg (P \land Q)$] \hfill
+%     \begin{proof} \hfill
+%         \begin{prooftree}
+%             \AxiomC{$\neg P \lor \neg Q$}
+%                     \AxiomC{$[\neg P]$}
+%                     \noLine
+%                     \UnaryInfC{$[P \land Q]$}
+%                     \RightLabel{$(\land E)$}
+%                     \UnaryInfC{$P$}
+%                     \RightLabel{$(\land I)$}
+%                     \UnaryInfC{$P \land \neg P$}
+%                     \RightLabel{$(\to I)$}
+%                     \UnaryInfC{$\neg (P \land Q)$}
+%                             \AxiomC{$[\neg Q]$}
+%                             \noLine
+%                             \UnaryInfC{$[P \land Q]$}
+%                             \RightLabel{$(\land E)$}
+%                             \UnaryInfC{$Q$}
+%                             \RightLabel{$(\land I)$}
+%                             \UnaryInfC{$Q \land \neg Q$}
+%                             \RightLabel{$(\to I)$}
+%                             \UnaryInfC{$\neg (P \land Q)$}
+%                 \RightLabel{($\lor E$)}
+%                 \TrinaryInfC{$\neg (P \land Q)$}
+%         \end{prooftree}
+%     \end{proof}
+% \end{example}
+
+% To finalize the meaning of connectives in intuitionistic logic, it is necessary to introduce the meaning of the bottom particle $\bot$ (also called \textbf{falsum}) and the meaning of the negation ($\neg$) in intuicionism.
+
+% $a:\bot$ is always false, so there is no proof of an absurdity. Hence, a proof of $\neg A$ means that all proofs $a:A$ can be converted into a contradiction. That means that there is a function $f$ such that $f(a) : \bot$, i.e. $A \to \bot$.
+
+\subsubsection{Normalization}
+\label{Normalization}
+
+We begin this section by taking a look at the rules for conjunction and implication. Notice that the conclusion of their elimination rules is subformulas of their premisses. Conversely, the premisses of their introduction rules are subformulas of their conclusions.
+
+This pattern motivates us to transform derivations with conjunction and implication into some `normal' form. But what are these normal forms like? 
+
+A derivation in normal form is done as follows:
+\begin{enumerate}
+    \item First, make the necessary assumptions.
+    \item Second, apply the elimination rules.
+    \item Last, use introduction rules.
+\end{enumerate}
+
+This procedure motivates the following definition.
+
+\begin{definition}[Normal Form]
+    A derivation in natural deduction is in \textbf{normal form} if all major premisses of elimination rules are assumptions.
+\end{definition}
+
+A natural question emerges. When does a normal form exist? 
+
+Not all systems of natural deduction admit a conversion to normal form. Does NJ admits it?
+
+\begin{definition}[Normalization]
+    \textbf{Normalization} is the procedure that converts any given derivation into a normal form. If this application always terminates after a finite number of steps, it is called a \textbf{strong normalization}.
+\end{definition}
+
+Also naturally, is the normalization unique? Normalizing a given derivation will always terminate into the same normal proof, however different non-normal derivations, in general, terminate in different normal derivations.
+
+\begin{theorem}[Normalization Theorem]
+    Given a natural deduction derivation $\Gamma \vdash C$, ...
+\end{theorem}
+
+For a more detailed study of normalization, please refer to \cite{negri2008structural}.
+
+\subsection{Sequent Calculus}
+\label{Sequent}
+
+There are more than one way of defining Sequent Calculus for intuitionistic logic. For Gentzen's \textbf{LJ}, which allows only one succedent, see \cite{takeuti2013proof}. Here, it's used \textbf{G3i}, which is explained in detail in \cite{negri2008structural} (mainly p. 28 and 67).
+
+\begin{definition}[Sequent]
+    A \textbf{sequent} is an expression of the form
+    \[\Gamma \to \Delta \]
+    where $\Gamma$ (called \textbf{antecedent}) and $\Delta$ (called \textbf{succedent}) are finite sequence of formulas, possibly empty.
+\end{definition}
+
+Left side interpreted as `and'. Right side as `or'. For the propositional sequent calculus, we have the following axiom and rules:
+
+\begin{prooftree}
+(Ax) \AxiomC{}
+\UnaryInfC{$P, \Gamma \vdash P$}
+\end{prooftree}
+
+%\begin{prooftree}
+%    ($\neg L$) \AxiomC{$\Gamma \vdash \Delta, A$}
+%    \UnaryInfC{$\neg A, \Gamma \vdash \Delta$}
+%    \DisplayProof \hspace{50pt}
+%    ($\neg R$) \AxiomC{$A, \Gamma \vdash \Delta$}
+%    \UnaryInfC{$\Gamma \vdash \Delta, \neg A$}
+%\end{prooftree}
+
+\begin{prooftree}
+($\land L$) \AxiomC{$A, B, \Gamma \vdash C$}
+\UnaryInfC{$A \land B, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+($\land R$) \AxiomC{$\Gamma \vdash A$}
+\AxiomC{$\Gamma \vdash B$}
+\BinaryInfC{$\Gamma \vdash A \land B$}
+\end{prooftree}
+
+\begin{prooftree}
+($\lor L$) \AxiomC{$A, \Gamma \vdash C$}
+\AxiomC{$B, \Gamma \vdash C$}
+\BinaryInfC{$A \lor B, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+($\lor R$) \AxiomC{$\Gamma \vdash A$}
+\UnaryInfC{$\Gamma \vdash A \lor B$}
+\DisplayProof \hspace{10pt}
+\AxiomC{$\Gamma \vdash B$}
+\UnaryInfC{$\Gamma \vdash A \lor B$}
+\end{prooftree}
+
+\begin{prooftree}
+($\to L$) \AxiomC{$A \to B, \Gamma \vdash A$}
+\AxiomC{$B, \Gamma \vdash C$}
+\BinaryInfC{$A \to B, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+($\to R$) \AxiomC{$A, \Gamma \vdash B$}
+\UnaryInfC{$\Gamma \vdash A \to B$}
+\end{prooftree}
+
+\begin{prooftree}
+($\bot L$) \AxiomC{}
+\UnaryInfC{$\bot, \Gamma \vdash C$}
+\end{prooftree}
+
+And the following rules for quantifiers:
+
+\begin{prooftree}
+($\forall L$) \AxiomC{$A[t/x], \forall x A, \Gamma \vdash C$}
+\UnaryInfC{$\forall x A, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+($\forall R$) \AxiomC{$\Gamma \vdash A[y/x]$}
+\UnaryInfC{$\Gamma \vdash \forall x A$}
+\end{prooftree}
+
+\begin{prooftree}
+($\exists L$) \AxiomC{$A[y/x], \Gamma \vdash C$}
+\UnaryInfC{$\exists x A, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+($\exists R$) \AxiomC{$\Gamma \vdash A[t/x]$}
+\UnaryInfC{$\Gamma \vdash \exists x A$}
+\end{prooftree}
+
+With the restriction in the rules for $\forall R$ and $\exists L$  that $y$ must not occur free in $\exists x A, \Gamma, C$.
+
+Finally, there are some structural rules: weakening (Wk), contraction (Ctr) and cut. 
+
+\begin{prooftree}
+(Wk) \AxiomC{$\Gamma \vdash C$}
+\UnaryInfC{$A, \Gamma \vdash C$}
+\DisplayProof \hspace{50pt}
+(Ctr) \AxiomC{$A, A, \Gamma \vdash C$}
+\UnaryInfC{$A, \Gamma \vdash C$}
+\end{prooftree}
+
+\begin{prooftree}
+(Cut) \AxiomC{$\Gamma \vdash A$}
+\AxiomC{$A, \Delta \vdash C$}
+\BinaryInfC{$\Gamma, \Delta \vdash C$}
+\end{prooftree}
+
+And, as said before, $\neg A$ is simply $A \to \bot$.
+
+A sequent proof is built bottom-up. First, write the formula that is going to be proved at the bottom and then apply a rule above it. This procedure is repeated until the last rule applied to all branches is (Ax) or $(\bot L)$.
+
+The application of either of these two rules forms an \textbf{initial sequent} because they finalize the proof. However, since first-order intuitionistic logic is not decidable, this process may not end.
+
+% In order to exemplify sequent calculus, we'll show that part of De Morgan's laws holds, but not everything.
+
+If the reader is not familiar with sequent calculus, please take a look at the \hyperref[Examples-SC]{appendix}, where some derivations are presented.
+
+An important theorem about Sequent Calculus, known as `Gentzen's Hauptsatz', is the following.
+
+\label{Hauptsatz} \index{Cut-Elimination Theorem}
+\begin{theorem}[Cut-Elimination Theorem]
+    If a sequent is proved with the cut rule, then there is a proof of this sequent without the cut.
+\end{theorem}
+
+The proof of this theorem is long and intricated. The reader can find it in \cite{negri2008structural} and \cite{mancosu2021introduction}.
+
+Two simple theorems, that show the constructivist philosophy behind intuitionistic logic are the Disjunction Property and Existence Property. The first one says that if $A \lor B$ is proved, then either $A$ or $B$ is proved. The second states that if $\exists x A$ is the case, then an instance of $A$ for some term is also proved.
+
+\begin{theorem}[Disjunction Property]
+    If $\vdash A \lor B$ is derivable in Sequent Calculus, then either $\vdash A$ or $\vdash B$ is derivable.
+\end{theorem}
+
+\begin{proof}
+    Since we have an empty antecedent, only right rules can be applied. Hence, the last rule applied must be $\lor R$.
+\end{proof}
+
+\begin{theorem}[Existence Property]
+    If $\vdash \exists x A$ is derivable in Sequent Calculus, then $\vdash A[t/x]$ is derivable for some term $t$.
+\end{theorem}
+
+\begin{proof}
+    Consider a cut-free derivation of $\vdash \exists x A$. Then, the last rules applied must be $\exists R$. 
+\end{proof}
+
+\subsection{Kripke's Semantics}
+\label{Kripke-Semantics}
+
+As Gödel proved in 1932, intuitionistic logic cannot be finitely many-valued \cite{sep-goedel}. So an alternative to truth-functional interpretation is to use Kripke's possible-worlds semantics. The intuition behind it was beautifully described by van Dalen:
+
+\begin{quotation}
+    The basic idea is to mimick the mental activity of Brouwer’s individual, who creates all of mathematics by himself. This idealized mathematician, also called creating subject by Brouwer, is involved in the construction of mathematical objects, and in the construction of proofs of statements. This process takes place in time. So at each moment he may create new elements, and at the same time he observes the basic facts that hold for his universe so far. In passing from one moment in time to the next, he is free how to  continue his activity, so the picture of his possible activity looks like a partially ordered set (even like a tree). At each moment there is a number of possible next stages. These stages have become known as \textit{possible worlds}. \cite[p. 236-237]{van2017lej}
+\end{quotation}
+
+An interpretation is defined as follows.
+
+\begin{definition}[Interpretation]
+    An \textbf{interpretation} for the intuitionistic language $\mathfrak{L}$ is a structure \( \langle D, H, W, R, \nu \rangle \) where
+    \begin{itemize}
+        \item $D$ is the domain of quantification;
+        \item $H$ is the set of `avatars';
+        \item $W$ is the set of `worlds';
+        \item $R$ is a binary relation on $W$;
+        \item $\nu$ assigns each pair of $w \in W$ and formula $A$ to a truth value $1$ (true) or $0$ (false).
+    \end{itemize}
+\end{definition}
+
+Intuitively, $W$ can be understood as a set of possible worlds or states of information. The relation $R$ says which state access which. And the value function $\nu_w(A) = 1$ if $A$ is true at state $w$ and $0$ otherwise.
+
+A world $w$ can be seen as a state of information at a given time, which holds everything that was proved at that time. If new information is discovered in a future time, say in the world $w'$, then this new world will hold this new information plus all previous discoveries.
+
+To preserve the discoveries made in previous states of information it is necessary to add the following constraint:
+\[
+\text{for all } w \in W, \text{ if } \nu_w(p) = 1 \text{ and } wRw', \nu_{w'}(p) = 1
+\]
+which is called \textbf{heredity condition}.
+
+Hence, it is natural to think that $w'$ is an extension of $w$, i.e., the following properties hold:
+\begin{itemize}
+    \item \textbf{Reflexivity}: $wRw$ for all $w$.
+    \item \textbf{Transitivity}: for all $w_1, w_2, w_3$, if $w_1Rw_2$ and $w_2Rw_3$, then $w_1Rw_3$.
+\end{itemize}
+
+Clearly, $R$ is also \textbf{antisymmetric} because if $w \leq w'$ (i.e., $w$ happens before $w'$ or at the same time) and $w' \leq w$ then $w = w'$. That means that $R$ is a partial order relation and $W$ is a poset.
+
+Moving to the quantified aspect of the interpretation, the domain of quantification $D$ is the range of $\forall$ and $\exists$ and consists of functions from $W$ to $H$. Intuitively, $d(w)$ is the avatar of $d$ in $w$, i.e., the `form' that $d$ takes in the world $w$.
+
+The heredity constraint is valid for any predicate $P$, that is, for all $w \in W$, if $wRw'$ then $\nu_w(P) \subseteq \nu_{w'}(P)$. However, to preserve what is proved into further states, it is also necessary to add a \textbf{domain-increasing constraint}: $D_w \subseteq D_{w'}$.
+
+Furthermore, for every individual constant $a$ and every $w \in W$, $\nu(a) \in D_w$. Without this restraint, we obtain \index{Free Intuitionistic Logic} \textbf{Free Intuitionistic Logic}. For that, please refer to \cite{priest2008introduction}.
+
+At last, how identity should be understood in intuitionistic logic? Since ``the Law of Excluded Middle holds for identity statements if identity is necessary identity'', intuitionistic identity is in fact contingent identity.
+
+Naturally, connectives are interpreted as follows:
+\begin{enumerate}
+    \item $\nu_w(A \land B) = 1$ if $\nu_w(A) = 1 = \nu_w(B)$, and $0$ otherwise.
+    \item $\nu_w(A \lor B) = 1$ if $\nu_w(A) = 1$ or $\nu_w(B) = 1$, and $0$ otherwise.
+    \item $\nu_w(A \to B) = 1$ if for all $w'$ such that $wRw'$, either $v_{w'}(A) = 0$ or $v_{w'}(B) = 1$, and $0$ otherwise.
+    \item $\nu_w(\neg A) = 1$ if for all $w'$ such that $wRw'$, $v_{w'}(A) = 0$, and $0$ otherwise.
+    \item $\nu_w (Pa_1 \ldots a_n) = 1$ if $\langle \nu(a_1), \ldots, \nu(a_n) \rangle \in \nu_w(P)$ and is $0$ othervise.
+    \item $\nu_w(\exists x A(x)) = 1$ if for some $d \in D_w, \nu_w(A[k_d/x])=1$, and is $0$ otherwise.
+    \item $\nu_w(\forall x A(x)) = 1$ if for all $w'$ such that $wRw'$, and all $d \in D_{w'}$, $v_{w'}(A[k_d/x])=1$, and is $0$ otherwise.
+    \item $\nu_w(=) = \{ \langle h, h \rangle : h \in H \}$
+\end{enumerate}
+where $v(k_d) = d$ and $A[k_d/x]$ stands for replacing every instance of $x$ with $k_d$.
+
+Notice that $\neg A := A \to \bot$ means that no future state verifies $A$. And $\neg \neg A$ as everywhere above the state eventually has $A$.
+
+\begin{example}[]\label{possible-worlds-example}
+    Suppose that $S_0$ holds no proofs, $A$ is proved at $S_1$, and $B$ is proved at $S_2$, where $S_0 R S_1$ and $S_0 R S_2$. Then, $A \lor B$ is valid both at $S_1$ and $S_2$.
+
+    Now suppose that $B$ is discovered at a state $S_3$, accessible only to $S_1$. That means that $A \land B$ is valid at $S_3$, $A \to B$ is valid at $S_3$, and $B \to A$ is valid at $S_1$. However, $A \to B$ is not valid at $S_1$. Also, $\neg \neg B$ is valid at $S_1$.
+
+    Finally, suppose that $S_2$ branches into two states $S_4$ and $S_5$. In $S_4$ there is no additional proofs, and is a final state. Since no further state verifies $A$, then $\neg A$ holds at $S_4$.
+    
+    While in $S_5$ there is also a proof of $A$. Which implies that $\neg A$ is not valid at $S_2$. Also, $A \land B$ and $B \to A$ are valid at $S_5$, and $A \to B$ is valid at $S_2$.
+
+    These states of information can be visualized as a tree as follows.
+    \begin{figure}[h]
+        \begin{center}
+          \begin{tikzpicture}[modal,node distance = 15mm]
+            \node[world] (S_0) [label={[align=right]right:}]{$S_0$}; 
+            \node[world] (S_1) [label={[align=right]left:\mTrue{A, A\lor B}\\ \mTrue{B\to A}\\ \mTrue{\neg \neg B}},
+              above left=of S_0]{$S_1$}; 
+            \node[world] (S_2) [label={[align=right]right:\mTrue{B, A \lor B}\\ \mTrue{A \to B}},
+              above right=of S_0] {$S_2$};
+            \node[world] (S_3) [label={[align=right]left:\mTrue{A, B, A\land B}\\ \mTrue{A \lor B, A \to B}},
+              above=of S_1] {$S_3$};
+            \node[world] (S_4) [label={[align=right]right:\mTrue{B, A \lor B, \neg A}\\ \mTrue{A \to B}},
+              above left=of S_2] {$S_4$};
+            \node[world] (S_5) [label={[align=right]right:\mTrue{A, B, A\land B}\\ \mTrue{A\lor B, B \to A}},
+              above right=of S_2] {$S_5$};
+            \draw[->] (S_0) to (S_1);
+            \draw[->] (S_0) to (S_2);
+            \draw[->] (S_1) to (S_3);
+            \draw[->] (S_2) to (S_4);
+            \draw[->] (S_2) to (S_5);
+          \end{tikzpicture}
+        \end{center}
+        \caption{The model descripted in the Example \ref{possible-worlds-example}.}
+        \label{fig:possible-worlds-example}
+      \end{figure}
+    % % https://q.uiver.app/?q=WzAsNixbMSwyLCJTXzAiXSxbMCwxLCJTXzEiXSxbMiwxLCJTXzIiXSxbMCwwLCJTXzMiXSxbMSwwLCJTXzQiXSxbMywwLCJTXzUiXSxbMCwxXSxbMCwyXSxbMSwzXSxbMiw0XSxbMiw1XV0=
+    % \[\begin{tikzcd}
+    %     {S_3} & {S_4} && {S_5} \\
+    %     {S_1} && {S_2} \\
+    %     & {S_0}
+    %     \arrow[from=3-2, to=2-1]
+    %     \arrow[from=3-2, to=2-3]
+    %     \arrow[from=2-1, to=1-1]
+    %     \arrow[from=2-3, to=1-2]
+    %     \arrow[from=2-3, to=1-4]
+    % \end{tikzcd}\]
+    
+    For a rigorous definition of a tree, see \cite{smullyan1995first}.
+\end{example}
+
+\index{Consequence!Semantical}
+\begin{definition}[Semantical Consequence]
+    Let $\Sigma$ be a set of formulas, called premises, and $C$ be the conclusion. Then $C$ is called \textbf{semantical consequence} of $\Sigma$, denoted $\Sigma \vDash C$, if, at all worlds, every interpretation that makes all premises true also makes the conclusion true.
+    
+    In summary, if $\nu_{w}(\sigma) = 1$ for all $\sigma \in \Sigma$, then $\nu_{w}(C) = 1$, for all $w \in W$. If this is not the case, then we denote $\Sigma \not\vDash C$. If $\Sigma = \emptyset$, then $\vDash C$ is called a \textbf{tautology}.
+\end{definition}
+
+% Similarities with normal modal logic $B$ (where reflexivity and transitivity holds): same interpretation, and \(\neg A\) is, in effect, \(\Box \neg A\) and \(A \to B\) is, in effect, \(\Box (A \to B)\).
+
+\subsection{Tableaux}
+\label{Tableaux}
+
+With Kripke's semantics in mind, the analytical tableaux come naturally, using the idea of possible worlds thoroughly.
+
+Intuitively, a \textbf{tableau} is a tree-like structure
+
+\begin{center}
+\begin{tableau}
+{
+    line numbering = false,
+    for tree={s sep'=10mm},
+    close with=$\times$ %use pre-defined absurdity sign
+}
+[\cdot
+    [\cdot]
+    [\cdot
+        [\cdot]
+        [\cdot]
+    ]
+]
+\end{tableau}
+\end{center}
+where each dot is called a \textbf{node}, the top node is called \textbf{root}, and the ones at the bottom are called \textbf{tips}. A path from the root to a node is called a \textbf{branch}.
+
+The propositional rules are the following:
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \land B, +i \]
+\[ \downarrow \]
+\[ A, +i \]
+\[ B, +i \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \land B,-i \]
+\[ \swarrow \searrow \]
+\[ A, -i \hspace{10pt} B, -i \]
+\end{tabular}
+\end{minipage}
+
+\kern-2em % reduces space
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \lor B, +i \]
+\[ \swarrow \searrow \]
+\[ A, +i \hspace{10pt} B, +i \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \lor B,-i \]
+\[ \downarrow \]
+\[ A, -i \]
+\[ B,-i \]
+\end{tabular}
+\end{minipage}
+
+\kern-2em % reduces space
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \to B, +i \]
+\[ irj \]
+\[ \swarrow \searrow \]
+\[ A, -j \hspace{10pt} B, +j \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ A \to B,-i \]
+\[ \downarrow \]
+\[ irj \]
+\[ A, +j \]
+\[ B, -j \]
+\end{tabular}
+\end{minipage}
+
+\kern-2em % reduces space
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \neg A, +i \]
+\[ irj \]
+\[ \downarrow \]
+\[ A, -j \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \neg A,-i \]
+\[ \downarrow \]
+\[ irj \]
+\[ A, +j \]
+\end{tabular}
+\end{minipage}
+
+Where we use $\Gamma,+i$ to represent that $\Gamma$ is true at the world $i$ and $\Gamma,-i$ means that $\Gamma$ is false at $i$. A branch is closed when there are nodes of the form $\Gamma,+i$ and $\Gamma,-i$.
+
+Heredity constraint:
+
+\[ p, +i \]
+\[ irj \]
+\[ \downarrow \]
+\[ p, +j \]
+
+Quantifiers:
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \exists x A(x), +i \]
+\[ \downarrow \]
+\[ A[c/x],+i \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \forall x A(x),-i \]
+\[ \downarrow \]
+\[ irj \]
+\[ A[c/x],-j \]
+\end{tabular}
+\end{minipage}
+
+Where $c$ and $j$ are new to the branch.
+
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \exists x A(x), -i \]
+\[ \downarrow \]
+\[ A[a/x],-i \]
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{p{\textwidth}}
+\[ \forall x A(x),+i \]
+\[ irj \]
+\[ \downarrow \]
+\[ A[a/x],+j \]
+\end{tabular}
+\end{minipage}
+
+Where $i$ is the entry point of $A$, i.e., the first time that this constant appears.
+
+% `Add a dummy line of the form $c=c,+0$ at the start of the initial list'.
+
+For identity, we add the following rule:
+
+\[ a = b, +i \]
+\[ irj \]
+\[ \downarrow \]
+\[ a=b, +j \]
+
+To make a proof in this method, start by listing the premisses as true at an initial world, i.e., $+0$, and the conclusion as false at that world, i.e. $-0$.
+
+For examples of derivations using tableuax and how to find counter-models, please look at the \hyperref[Examples-Tableaux]{appendix}. And for a more in-depth look at tableaux, please refer to \cite{priest2008introduction} and \cite{smullyan1995first}.
+
+\subsection{Topological Interpretation}
+\label{Topological}
+
+\begin{definition}[Topology]
+    A \textbf{topology} on a set $X$ is a collection $\mathfrak{T}$ of subsets of $X$ in which the following properties hold:
+    \begin{enumerate}
+        \item $\emptyset$ and $X$ are in $\mathfrak{T}$.
+        \item The union of elements of any subcollection of $\mathfrak{T}$ is in $\mathfrak{T}$, i.e., $\mathfrak{U} \subseteq \mathfrak{T} \implies \bigcup \mathfrak{U} \in \mathfrak{T}$.
+        \item The intersection of the elements of any finite subcollection of $\mathfrak{T}$ is in $\mathfrak{T}$, i.e., $U, V \in \mathfrak{T} \implies U \cap V \in \mathfrak{T}$.
+    \end{enumerate}
+    And the set $X$ is called a \textbf{topological space}.
+\end{definition}
+
+\begin{definition}[Closure]
+    The \textbf{closure} of a set $X$ is the intersection of all closed sets containing $X$.
+\end{definition}
+
+\begin{definition}[Interior]
+    The \textbf{interior} of a set $X$, denoted Int($X$), is the largest open subset of $X$, i.e., `the union of all open sets containing $X$'.
+\end{definition}
+
+Generalization of Boolean Algebra: in which we have the powerset with a given set and $\cap, \cup, ^c$ correspond to $\land, \lor, \neg$.
+
+Add the restriction that $A^{cc} \neq A$, however $A^{ccc} = A^c$ since, by Brouwer's theorem, $\neg \neg \neg A \leftrightarrow \neg A$.
+
+Other restrictions:
+\begin{itemize}
+    \item $(A \cap B)^{cc} = A^{cc} \cap B^{cc}$
+    \item $(A \cup B)^{cc} \subseteq A^{cc} \cup B^{cc}$
+\end{itemize}
+
+`Operator $^{cc}$ behaves as a closure operator in topology' \cite{vandalen-blackwell}.
+
+Let open sets in a topological space $X$, i.e., $\mathcal{O}(X)$ be $\mathcal{P}(X)$.
+
+Notation: $\llbracket A \rrbracket$ denotes the open set of $X$ assigned to $A$. $\llbracket \bot \rrbracket = \emptyset$
+
+Valuation function: $\llbracket \cdot \rrbracket : PROP \longrightarrow \mathcal{O}(X)$ defined as follows:
+\begin{enumerate}
+    \item $\llbracket A \land B \rrbracket$ = $\llbracket A \rrbracket \cap \llbracket B \rrbracket$
+    \item $\llbracket A \lor B \rrbracket$ = $\llbracket A \rrbracket \cup \llbracket B \rrbracket$
+    \item $\llbracket A \to B \rrbracket$ = Int$\left(\llbracket A \rrbracket^c \cup \llbracket B \rrbracket \right)$
+    \item $\llbracket \neg A \rrbracket$ = Int$\left(\llbracket \neg A \rrbracket^c \right)$
+    \item $\llbracket \exists x A(x) \rrbracket = \bigcup \left( \llbracket A[d] \rrbracket | d \in D \right)$
+    \item $\llbracket \forall x A(x) \rrbracket = \text{Int}\left(\bigcap \left(\llbracket A[d] \rrbracket \right) | d \in D \right)$
+\end{enumerate}
+And $A$ is true in $\mathcal{O}(x)$ if $\llbracket A \rrbracket = X$.
+
+To elucidate the topological interpretation, two examples are given below, showing that the classical laws of double negation elimination and excluded middle do not hold in Intuitionistic Logic.
+
+\label{DNE}
+\begin{example}[$\not\vdash \neg \neg A \to A$] \hfill
+    \begin{proof}
+    Let $\mathcal{O}(\mathbb{R})$ be the open sets of real numbers and define $A$ as the set $\mathbb{R} \setminus \{ 0 \}$. Since
+    \[ \llbracket A \rrbracket = \mathbb{R} \setminus \{ 0 \} \text{ and } \llbracket \neg A \rrbracket = \text{Int}(\{ 0 \}) = \emptyset \]
+    it follows that $\llbracket \neg \neg A \rrbracket = \mathbb{R}$.
+
+    Therefore, \[ \llbracket \neg \neg A \to A \rrbracket = \text{Int}(\llbracket \neg \neg A \rrbracket^c \cup \llbracket A \rrbracket) = \emptyset \cup A = A \neq \mathbb{R} \]
+    \end{proof}
+\end{example}
+
+\begin{example}[$\not\vdash A \lor \neg A$] \hfill \label{LEM}
+\begin{proof}
+    Using $\mathcal{O}(\mathbb{R})$ and $A$ as in the proof of double negation elimination,
+    \[ \llbracket A \lor \neg A \rrbracket = \llbracket A \rrbracket \cup \llbracket \neg A \rrbracket = A \neq \mathbb{R} \]
+\end{proof}
+\end{example}
+
+Topological interpretation \cite{vandalen-blackwell}, \cite{munkres2000topology}.
+
+\subsection{Heyting Algebra}
+\label{Heyting}
+
+Not only intuitionistic logic is related to topology, but it can also be algebraizable, i.e., translated into algebra. In fact, `The algebra of open subsets of a topological space is a special case of a Heyting algebra.' \cite{van2017lej}.
+
+In order to do understand what is a Heyting Algebra, the definition will be broken into smaller pieces. First, define the relation `$\approx$' as follows:
+\[x \approx y \text{ iff. } \vdash x \leftrightarrow y\]
+where $x \leftrightarrow y$ is a shorthand notation for $(x \to y) \land (y \to x)$.
+
+Along with that, the idea of a lattice will be proven fundamental to the understanding of a Heyting Algebra.
+
+\begin{definition}[Lattice]
+    Let $L$ be a nonempty set and $\lor$ and $\land$ two binary operations. Then $\langle L, \lor, \land \rangle$ is called a \textbf{lattice} if it satisfies the following properties:
+    \begin{itemize}
+        \item[L1] (Commutativity): $x \lor y \approx y \lor x$ and $x \land y \approx y \land x$.
+        \item[L2] (Associativity): $x \lor (y \lor z) \approx (x \lor y) \lor z$ and $x \land (y \land z) \approx (x \land y) \land z$.
+        \item[L3] (Idempotency): $x \lor x \approx x$ and $x \land x \approx x$.
+        \item[L4] (Absorption): $x \approx x \lor (x \land y)$ and $x \approx x \land (x \lor y)$.
+    \end{itemize}
+\end{definition}
+
+\begin{definition}[Distributive Lattice]
+    Let $\langle L, \lor, \land \rangle$ be a lattice. Then $L$ is called a \textbf{distributive lattice} if it satisfies one of the following:
+    \begin{itemize}
+        \item[D1:] $x \land (x \lor y) \approx (x \land y) \lor (x \lor z)$
+        \item[D2:] $x \lor (y \land z) \approx (x \lor y) \land (x \lor z)$ 
+    \end{itemize}
+\end{definition}
+
+\begin{theorem}
+    A lattice satisfies D1 iff. it satisfies D2.
+\end{theorem}
+
+\begin{proof}
+    The proof can be found in \cite{sankappanavar1981course}
+\end{proof}
+
+Now, forgetting about the `Heyting' part of it, what is an algebra? 
+
+\begin{definition}[Algebra]
+    An \textbf{algebra} $A$ is a n-uple $\langle A, f_1, f_2, \ldots, f_{n-1} \rangle$ where $A$ is a nonempty set and $f_1, \ldots, f_{n-1}$ are functions.
+\end{definition}
+
+With all that in mind, the definition of a Heyting Algebra can be presented.
+
+\begin{definition}[Heyting Algebra]
+    A \textbf{Heyting Algebra} is an algebra $\langle H, \lor, \land, \to, 0, 1 \rangle$ satisfying:
+    \begin{itemize}
+        \item[H1:] $\langle H, \lor, \land \rangle$ is a distributive lattice.
+        \item[H2:] $x \land 0 \approx 0$ and $x \lor 1 \approx 1$
+        \item[H3:] $x \to x \approx 1$
+        \item[H4:] $(x \to y) \land y \approx y$ and $x \land (x \to y) \approx x \land y$
+        \item[H5:] $x \to (y \land z) \approx (x \to y) \land (x \to z)$ and $(x \lor y) \to (x \to z) \land (y \to z)$
+    \end{itemize}
+\end{definition}
+
+Notice that the negation symbol $\neg$ is not necessary to the definition of a Heyting Algebra because $\neg x$ is simply $x \to 0$.
+
+\subsection{Soundness and Correctness}
+\label{SoundAndComplete}
+
+Intuitionistic propositional logic is decidable. Quantified formulas in prenex form is decidable, so not all formulas in intuitionistic logic have a prenex form.
+
+\begin{theorem}[Soundness and Correctness]
+For any well formed formulas (define it!) $A$ and $B$, 
+    \[ A \vdash B \text{ iff. } A \vDash B \]
+\end{theorem}
+
+\subsection{G{\"o}del-Gentzen Translation}
+\label{Translation}
+
+A natural question that may arise is: `is it possible to translate a formula in Classical Logic into Intuitionistic Logic?' It turns out that it is. This is known as \textbf{Double Negation Translation} and \textbf{G{\"o}del-Gentzen Translation}.
+
+Let $A^{\circ}$ be the ``intuitionistic'' translation of the classical formula $A$. Then the following equivalences hold: 
+\begin{enumerate}
+\item $A^{\circ} \equiv \neg \neg A$
+\item $(A \land B)^{\circ} \equiv A^{\circ} \land B^{\circ}$
+\item $(A \lor B)^{\circ} \equiv \neg \neg (A^{\circ} \lor B^{\circ}) \equiv \neg(\neg A^{\circ} \land \neg B^{\circ})$
+\item $(A \to B)^{\circ} \equiv A^{\circ} \to B^{\circ}$
+\item $(\forall x A(x))^{\circ} \equiv \forall x A^{\circ}(x)$
+\item $(\exists x A(x))^{\circ} \equiv \neg \neg \exists x A^{\circ}(x) \equiv \neg \forall x \neg A^{\circ}(x)$
+\end{enumerate}
+where $\equiv$ means `is equivalent to'.
+
+\newpage
+\section{The Curry-Howard Correspondence}
+\label{CHC}
+
+\subsection{Intuitionistic Type Theory}
+\label{TT}
+
+Deductive system: set of \textbf{rules} for deriving \textbf{judgments}.
+
+Remember that the statement `$A$ has a proof $a$' was denoted $a : A$. Here, this means that `the term $a$ has type $A$', equivalent to `$a$ is an element of $A$'.
+
+If you introduce a variable you have to specify its type.
+
+Equality is a type and there's also an equality judgment (\textbf{judmental equality} or \textbf{definitional equality}). 
+
+Intentional Type Theory (ITT) versus Extensional Type Theory (ETT)
+\[
+ETT = ITT + ER + UIP
+\]
+where ER (Equality Reflection) + UIP (Uniqueness of Identity Proofs).
+
+ETT is an intuitionistic theory of Sets (see. Bishop)
+
+HoTT = Homotopy Type Theory
+\[
+HoTT = ITT + HIT + UA
+\]
+where HIT (Higher Inductive Types), UA (Univalence Axiom)
+
+HoTT is an intuitionistic theory of weak $\infty$-grupoids. Types are kind of abstract spaces.
+
+Proof relevance: proofs are mathematical objects that can be manipulated just like any other mathematical object. Formal proofs as distinct from proofs (what does that mean?).
+
+Core of HoTT: proofs are related to paths in a space.
+
+Type theory as an expansion of original Intuitionism, drawing Gentzen's insights in proof theory.
+
+Types classify admissable forms of constructions.
+
+Introduction rules: how to make a construction of a particular type.
+
+Elimination rules: how to use a construction.
+
+Inversion principle: conservation of proof. Introduction and Elimination are symmetrical.
+
+The first two: what are the constructions (statics).
+
+The last one: how they compute (dynamics).
+
+Axiomatic Freedom of Constructive Mathematics: fewer assumptions lead to stronger results. E.g. LEM. Selectively/locally introduce assumptions.
+
+If LEM is globally accepted, HoTT doesn't hold.
+
+Computational trinitarianism: type theory, proof theory and category theory.
+
+Function as a primitive concept. Is a type $A \longrightarrow B$ with domain $A$ and codomain $B$. May construct functions using $\lambda$-abstraction.
+
+$\beta$-reduction: $(\lambda x . \varphi)(a) = \varphi'$ where $\varphi'$ is the expression $\varphi$ where all occurences of $x$ were replaced by $a$.
+
+$\eta$-expansion: $f = (\lambda x . f(x))$.
+
+$\alpha$-conversion: $\lambda y . x + y = \lambda z . x + z$.
+
+\begin{definition}[Currying]
+    A multivariable function $f : A \times B \longrightarrow C$ can be written as $f : A \longrightarrow (B \longrightarrow C)$, i.e., as a function that takes one input $a : A$ and returns another function, which then takes a second input $b : B$ and yields the result $c : C$. Convention: associativity to the right, $f : A \longrightarrow B \longrightarrow C$.
+\end{definition}
+
+Write $f a b$ to denote $(f a) c$. Here the convention is associativity to the left.
+
+Univalence is a principle of mathematical efficiency. Consider equivalent propositions as equal.
+
+Heyting Algebra: lattice with exponentials (use order-theoretic formulation of intuitionistic logic). 
+
+Exercise: Prove that every Heyting Algebra is distributive, i.e. $A \land (B \lor C) \rightleftarrows (A \land B) \lor (A \land C)$. Hints: use exponentials and Yoneda's Lemma: $a \leq b$ iff. $\forall x$ if $x \leq a$ then $x \leq b$.
+
+% Watched until lec. 2 https://www.cs.cmu.edu/~rwh/courses/hott/
+
+What is a type?
+
+What is a term?
+
+\textbf{Canonical terms} are result of one of the rules. All other terms are called \textbf{noncanonical}.
+
+\begin{definition}[Judgment]
+    Evaluate the type? Akin to propositions. 
+    \begin{enumerate}
+        \item $\Gamma \vdash A : \text{Type}$, i.e., $A$ is a type.
+        \item $\Gamma \vdash x : A$, i.e., $x$ is a term of type $A$.
+        \item $\Gamma \vdash A = B : \text{Type}$.
+        \item $\Gamma \vdash x = y : A$, i.e., $x$ and $y$ are equal terms of type $A$.
+    \end{enumerate}
+\end{definition}
+
+\begin{definition}[Context]
+    The set of assumptions $\Gamma$ in the previous definition. In Dependent Type Theory, types and terms may depend on free variables. 
+    \[ x : A \vdash B(x) : \text{Type} \]
+    $B$ is a \textbf{dependent type} because it depends on a term $x$ of type $A$. 
+\end{definition}
+
+Rules for equality \href{https://www.math.fsu.edu/~ealdrov/teaching/2020-21/fall/MAS5932/agda/informal.html}{click here}. 
+
+Four kinds of rules:
+\begin{enumerate}
+    \item Formation: is a judgment that given a context, a type can be formed.
+    \item Introduction: specifies canonical terms and equalities between them.
+    \item Elimination: applies the introduced terms.
+    \item Conversion: how introduction and elimination rules interact.
+\end{enumerate}
+
+Start by simply typed $\lambda$-calculus. $\beta$-reduction.
+
+Definitions: types, judgment, terms, normal, conversion, reduction, normal form. 
+
+Theorems: (Uniqueness of Types, Subject Reduction, Progress, Safety) [see \cite{mimram:pp} and \cite{pierce2002types} (8.3)], The Church-Rosser Property, weak normalization, strong normalization.
+
+Symmetries in Natural Deduction appear in typed lambda calculi.
+
+\begin{prooftree}
+    ($\to I$)
+    \AxiomC{$[x:A]$}
+    \noLine
+    \UnaryInfC{$\mathfrak{D}$}
+    \noLine
+    \UnaryInfC{$N:B$}
+    \UnaryInfC{$\lambda x . N: A \to B$}
+    \DisplayProof \hspace{50pt}
+    ($\to E$) \AxiomC{$L: A \to B$} \AxiomC{$M:A$}
+    \BinaryInfC{$LM:B$}
+\end{prooftree}
+
+\begin{prooftree}
+    ($\land I$)
+    \AxiomC{$M:A$} \AxiomC{$N:B$}
+    \BinaryInfC{$(M,N): A \land B$}
+    \DisplayProof \hspace{50pt}
+    ($\land E$)
+    \AxiomC{$L: A \land B$}
+    \UnaryInfC{$\text{fst }L:A$}
+    \DisplayProof \hspace{10pt}
+    \AxiomC{$L: A \land B$}
+    \UnaryInfC{$\text{snd }L:B$}
+\end{prooftree}
+
+\subsection{The Correspondence}
+\label{The-Correspondence}
+
+Is the `same' as BHK Interpretation.
+
+Propositions as Types. Proof as Programs / Terms. Simplification of proofs as evaluations of programs.
+
+\begin{centering}
+\begin{tabular}{| l | l |} 
+    \hline
+    \textbf{Propositions} & \textbf{Types} \\ \hline
+    $a : A$ & $a \in A$ \\ \hline
+    $p : A \longrightarrow B, q: A \vdash p(q): B$ & $p \in A \longrightarrow B, q \in A \vdash p(q) \in B$ \\ \hline
+    $x : A \vdash t(x) : B \text{ then } \lambda x \cdot t: A \longrightarrow B$ & $x : A \vdash t(x) \in B \text{ then } \lambda x \cdot t \in A \longrightarrow B$ \\ \hline
+\end{tabular}
+\end{centering}
+
+Why Intuitionistic Logic? Because it allows the `shift from provability to proofs' \cite{mimram:pp}.
+
+\textbf{Type Theory and Curry-Howard Correspondence:}
+
+\href{https://cstheory.stackexchange.com/questions/30544/what-is-the-relationship-between-intuitionistic-logic-combinatory-logic-and-lam}{Cut-elimination as computation}
+
+Describe the correspondence: how $A \land B$ translates to $\langle u, v \rangle$ where $u$ and $v$ correspond to the deductions of $A$ and $B$ etc.
+
+Important consequences: As we evaluate a program, it stays well typed.
+
+\subsection{Automated Reasoning and Knowledge Representation}
+\label{ARKR}
+
+\subsubsection{Proof Assistants: Agda, Lean, Coq etc.}
+\label{Proof-Assistants}
+
+Why use them? Traditional PL's type systems are not expressive enough and are unsound (source?).
+
+Agda, Lean, Coq are based on dependent type theory.
+
+\newpage
+\appendix
+
+\section{Examples}
+\label{Examples}
+
+\subsection{Natural Deduction}
+\label{Examples-ND}
+
+\index{De Morgan's Laws}
+\begin{example}{$\vdash (P \land Q) \to \neg (\neg P \lor \neg Q)$}
+    \begin{proof} \hfill
+        \begin{prooftree}
+            \AxiomC{$[\neg P \lor \neg Q]$}
+                    \AxiomC{$P \land Q$}
+                    \RightLabel{$(\land E)$}
+                    \UnaryInfC{$P$}
+                            \AxiomC{$[\neg P]$}
+                        \RightLabel{$(\land I)$}
+                        \BinaryInfC{$P \land \neg P$}
+                        \RightLabel{$(\bot I)$}
+                        \UnaryInfC{$\bot$}
+                            \AxiomC{$P \land Q$}
+                            \RightLabel{$(\land E)$}
+                            \UnaryInfC{$Q$}
+                                    \AxiomC{$[\neg Q]$}
+                                \RightLabel{$(\land I)$}
+                                \BinaryInfC{$Q \land \neg Q$}
+                                \RightLabel{$(\bot I)$}
+                                \UnaryInfC{$\bot$}
+                \RightLabel{$(\lor E)$}
+                \TrinaryInfC{$\bot$}
+                \RightLabel{$(\to I)$}
+                \UnaryInfC{$\neg(\neg P \lor \neg Q)$}
+        \end{prooftree}
+    \end{proof}
+\end{example}
+
+\index{De Morgan's Laws}
+\begin{example}[$\vdash (\neg P \lor \neg Q) \to \neg (P \land Q)$] \hfill
+    \begin{proof} \hfill
+        \begin{prooftree}
+            \AxiomC{$\neg P \lor \neg Q$}
+                    \AxiomC{$[P \land Q]$}
+                    \RightLabel{$(\land E)$}
+                    \UnaryInfC{$P$}
+                            \AxiomC{$[\neg P]$}
+                        \RightLabel{$(\land I)$}
+                        \BinaryInfC{$P \land \neg P$}
+                        \RightLabel{$(\to I)$}
+                        \UnaryInfC{$\neg (P \land Q)$}
+                                \AxiomC{$[P \land Q]$}
+                                \RightLabel{$(\land E)$}
+                                \UnaryInfC{$Q$}
+                                        \AxiomC{$[\neg Q]$}
+                                    \RightLabel{$(\land I)$}
+                                    \BinaryInfC{$Q \land \neg Q$}
+                                    \RightLabel{$(\to I)$}
+                                    \UnaryInfC{$\neg (P \land Q)$}
+                \RightLabel{($\lor E$)}
+                \TrinaryInfC{$\neg (P \land Q)$}
+        \end{prooftree}
+    \end{proof}
+\end{example}
+
+\begin{example}[$\vdash \neg (P \lor Q) \to (\neg P \land \neg Q)$] \hfill
+    \begin{proof} \hfill
+        \begin{prooftree}
+            \AxiomC{$[P]$}
+            \RightLabel{$(\lor I)$}
+            \UnaryInfC{$P \lor Q$}
+                    \AxiomC{$[\neg(P \lor Q)]$}
+                \RightLabel{$(\to E)$}
+                \BinaryInfC{$\bot$}
+                \RightLabel{$(\to I)$}
+                \UnaryInfC{$\neg P$}
+                        \AxiomC{$[Q]$}
+                        \RightLabel{$(\lor I)$}
+                        \UnaryInfC{$P \lor Q$}
+                                \AxiomC{$[\neg(P \lor Q)]$}
+                            \RightLabel{$(\to E)$}
+                            \BinaryInfC{$\bot$}
+                            \RightLabel{$(\to I)$}
+                            \UnaryInfC{$\neg Q$}
+                    \RightLabel{$(\land I)$}
+                    \BinaryInfC{$\neg P \land \neg Q$}
+                    \RightLabel{$(\to I)$}
+                    \UnaryInfC{$\neg (P \lor Q) \to (\neg P \land \neg Q)$}
+        \end{prooftree}
+    \end{proof}
+\end{example}
+
+\begin{example}[$\vdash (\neg P \land \neg Q) \to \neg (P \lor Q)$] \hfill
+    \begin{proof} \hfill
+        \begin{prooftree}
+            \AxiomC{$[P \lor Q]$}
+                    \AxiomC{$[\neg P \land \neg Q]$}
+                    \RightLabel{$(\land E)$}
+                    \UnaryInfC{$\neg P$}
+                            \AxiomC{$[P]$}
+                        \RightLabel{$(\land I)$}
+                        \BinaryInfC{$P \land \neg P$}
+                        \RightLabel{$(\bot I)$}
+                        \UnaryInfC{$\bot$}
+                                \AxiomC{$[\neg P \land \neg Q]$}
+                                \RightLabel{$(\land E)$}
+                                \UnaryInfC{$\neg Q$}
+                                        \AxiomC{$[Q]$}
+                                    \RightLabel{$(\land I)$}
+                                    \BinaryInfC{$Q \land \neg Q$}
+                                    \RightLabel{$(\bot I)$}
+                                    \UnaryInfC{$\bot$}
+                \RightLabel{$(\lor E)$}
+                \TrinaryInfC{$\bot$}
+                \RightLabel{$(\to I)$}
+                \UnaryInfC{$\neg (P \lor Q)$}
+                \RightLabel{$(\to I)$}
+                \UnaryInfC{$(\neg P \land \neg Q) \to \neg (P \lor Q)$}
+        \end{prooftree}
+    \end{proof}
+\end{example}
+
+\subsection{Sequent Calculus}
+\label{Examples-SC}
+
+\index{De Morgan's Laws}
+\begin{example}[$A \to \neg B \vdash B \to \neg A$]\hfill
+    \begin{proof}\hfill
+    \begin{prooftree}
+        \AxiomC{}
+        \RightLabel{(Ax)}
+        \UnaryInfC{$A \to \neg B, B, A \vdash A$}
+                \AxiomC{}
+                \RightLabel{($\bot R$)}
+                \UnaryInfC{$\neg B, B, A \vdash \bot$}
+            \RightLabel{($\to L$)}
+            \BinaryInfC{$A \to \neg B, B, A \vdash \bot$}
+            \RightLabel{($\to R$)}
+            \UnaryInfC{$A \to \neg B, B \vdash \neg A$}
+            \RightLabel{($\to R$)}
+            \UnaryInfC{$A \to \neg B \vdash B \to \neg A$}
+    \end{prooftree}
+    \end{proof}
+\end{example}
+
+\begin{example}[$\exists x F(x) \vdash \neg \forall y \neg F(y)$]\hfill
+    \begin{proof}\hfill
+    \begin{prooftree}
+        \AxiomC{}
+        \RightLabel{($\bot L$)}
+        \UnaryInfC{$F(a), \neg F(a) \vdash \bot$} 
+        \RightLabel{($\forall L$)}
+        \UnaryInfC{$F(a), \forall y \neg F(y) \vdash \bot$}
+        \RightLabel{($\to R$)}
+        \UnaryInfC{$F(a) \vdash \neg \forall y \neg F(y)$}
+        \RightLabel{($\exists L$)}
+        \UnaryInfC{$\exists x F(x) \vdash \neg \forall y \neg F(y)$}
+    \end{prooftree}
+    \end{proof}
+\end{example}
+
+\index{De Morgan's Laws}
+\begin{example}[$\neg (A \lor B) \vdash \neg A \land \neg B$]\hfill
+    \begin{proof}\hfill
+    \begin{prooftree}
+        \AxiomC{}
+        \RightLabel{(Ax)}
+        \UnaryInfC{$\neg(A \lor B), A \vdash A$}
+        \RightLabel{$(\lor R)$}
+        \UnaryInfC{$\neg(A \lor B), A \vdash A \lor B$}
+                \AxiomC{}
+                \RightLabel{($\bot L$)}
+                \UnaryInfC{$\bot, A \vdash \bot$}
+        \RightLabel{($\to L$)}
+        \BinaryInfC{$\neg(A \lor B), A \vdash \bot$}
+        \RightLabel{($\to R$)}
+        \UnaryInfC{$\neg (A \lor B) \vdash \neg A$}
+                \AxiomC{}
+                \RightLabel{(Ax)}
+                \UnaryInfC{$\neg(A \lor B), B \vdash B$}
+                \RightLabel{$(\lor R)$}
+                \UnaryInfC{$\neg(A \lor B), B \vdash A \lor B$}
+                        \AxiomC{}
+                        \RightLabel{$(\bot L)$}
+                        \UnaryInfC{$\bot, B \vdash \bot$}
+                \RightLabel{($\to L$)}
+                \BinaryInfC{$\neg(A \lor B), B \vdash \bot$}
+                \RightLabel{($\to R$)}
+                \UnaryInfC{$\neg(A \lor B) \vdash \neg B$}
+            \RightLabel{($\land R$)}
+            \BinaryInfC{$\neg (A \lor B) \vdash \neg A \land \neg B$}
+    \end{prooftree}
+    \end{proof}
+\end{example}
+
+\subsection{Tableaux}
+\label{Examples-Tableaux}
+
+\index{De Morgan's Laws}
+\begin{example}[$\not\vdash \neg(P \land Q) \to (\neg P \lor \neg Q)$]
+    \hfill
+    \begin{proof}
+        \hfill
+        \begin{center}
+            \begin{tableau}
+            {
+                line numbering = false,
+                for tree={s sep'=10mm},
+                close with=$\times$ %use pre-defined absurdity sign
+            }
+            [\neg(P \land Q) \mathrm{, +0},
+                [\neg P \lor \neg Q \mathrm{, -0},
+                    [\neg P \mathrm{, -0},
+                        [\neg Q \mathrm{, -0},
+                            [0\mathrm{r}1
+                                [P \mathrm{, +1},
+                                    [P \land Q \mathrm{, -1}
+                                        [P \mathrm{, -1},close]
+                                        [Q \mathrm{, -1},
+                                            [0\mathrm{r}2
+                                                [Q \mathrm{, +2}
+                                                    [P \land Q \mathrm{, -2}
+                                                        [Q \mathrm{, -2},close]
+                                                        [P \mathrm{, -2}]
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+            \end{tableau}
+        \end{center}
+
+    A counter-model can be read from the open branch as follows:
+    \begin{itemize}
+        \item States of information: $W = \{s_0, s_1, s_2\}$;
+        \item Accesibility relation: $s_0 R s_1$, $s_0 R s_2$;
+        \item Truth values at $s_0$: $\nu_{s_0}(\neg P) = 0$, $\nu_{s_0}(\neg Q) = 0$;
+        \item Truth values at $s_1$: $\nu_{s_1}(P) = 1$, $\nu_{s_1}(Q) = 0$;
+        \item Truth values at $s_2$: $\nu_{s_2}(P) = 0$, $\nu_{s_2}(Q) = 1$.
+    \end{itemize}
+    which is summarized in Figure [\ref{fig:de-morgan-tableau-1}].
+    
+    \begin{figure}[h]
+        \begin{center}
+          \begin{tikzpicture}[modal,node distance = 15mm]
+            \node[world] (s_0) [label={[align=right]above:\mTrue{+ \neg(P \land Q)} \\ \mTrue{-\neg P, - \neg Q}}]{$s_0$}; 
+            \node[world] (s_1) [label={[align=right]below:\mTrue{+P, -Q}},
+              below left=of s_0]{$s_1$}; 
+            \node[world] (s_2) [label={[align=right]below:\mTrue{-P, +Q}},
+            below right=of s_0] {$s_2$};
+            \draw[->] (s_0) to (s_1);
+            \draw[->] (s_0) to (s_2);
+          \end{tikzpicture}
+        \end{center}
+        \caption{A counter-model for this example.}
+        \label{fig:de-morgan-tableau-1}
+    \end{figure}
+    \end{proof}
+\end{example}
+
+\newpage
+\nocite{*}
+\bibliographystyle{alpha}
+\bibliography{intuitionistic.bib}
+\addcontentsline{toc}{section}{References}
+
+\printindex
+
+\end{document}
+
+% \begin{landscape}
+% %Example of calculus
+% \begin{prooftree}
+%     \AxiomC{}
+%     \RightLabel{(Ax)}
+%     \UnaryInfC{$A, B \vdash A$}
+%             \AxiomC{}
+%             \RightLabel{(Ax)}
+%             \UnaryInfC{$A, B \vdash B$}
+%         \RightLabel{($\land R$)}
+%         \BinaryInfC{$A, B \vdash A \land B$}
+%         \RightLabel{($\lor R$)}
+%         \UnaryInfC{$A, B \vdash (A \land B) \lor C$}
+%                 \AxiomC{}
+%                 \RightLabel{(Ax)}
+%                 \UnaryInfC{$A, C \vdash C$}
+%                 \RightLabel{($\lor R$)}
+%                 \UnaryInfC{$A,C \vdash (A \land B) \lor C$}
+%             \RightLabel{($\lor L$)}
+%             \BinaryInfC{$A, B \lor C \vdash (A \land B) \lor C$}
+%                 \AxiomC{}
+%                 \RightLabel{(Ax)}
+%                 \UnaryInfC{$C, B \vdash C$}
+%                 \RightLabel{($\lor R$)}
+%                 \UnaryInfC{$C, B \vdash (A \land B) \lor C$}
+%                         \AxiomC{}
+%                         \RightLabel{(Ax)}
+%                         \UnaryInfC{$C, C \vdash C$}
+%                         \RightLabel{($\lor R$)}
+%                         \UnaryInfC{$C, C \vdash (A \land B) \lor C$}
+%                     \RightLabel{($\lor L$)}
+%                     \BinaryInfC{$C, B \lor C \vdash (A \land B) \lor C$}
+%                 \RightLabel{($\lor L$)}
+%                 \BinaryInfC{$A \lor C, B \lor C \vdash (A \land B) \lor C$}
+%                 \RightLabel{($\land L$)}
+%                 \UnaryInfC{$(A \lor C) \land (B \lor C) \vdash (A \land B) \lor C$}
+% \end{prooftree}
+% \end{landscape}
